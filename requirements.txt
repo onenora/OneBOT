@@ -1,0 +1,7 @@
+Pyrogram
+TgCrypto
+uvloop
+apscheduler
+GitPython
+requests
+bs4
