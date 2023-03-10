@@ -52,6 +52,9 @@ class PLUGINS:
             'doc': func.__doc__,
             'ver': ver
         }
+    def delete(plugin):
+        global plugins
+        del plugins[plugin]
 
     def dct():
         return plugins
