@@ -210,10 +210,12 @@ async def handler(client, message):
                     if plugins[plugin]['type'] in ['cmd', 'msg']:
                         client.remove_handler(plugins[plugin]['handler'], plugins[plugin]['group'])
                         os.remove(plugins[plugin]['file'])
+                        PLUGINS.delete(plugin)
                         break
                     elif plugins[plugin]['type'] == 'sched':
                         scheduler.remove_job(str(plugins[plugin]['group']))
                         os.remove(plugins[plugin]['file'])
+                        PLUGINS.delete(plugin)
                         break
             content = content.replace(f"删除插件 `{plugin}`...\n", f"已删除插件：`{plugin}`\n")
             await message.edit(content)
