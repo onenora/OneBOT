@@ -199,25 +199,23 @@ async def handler(client, message):
                 await asyncio.sleep(1)
 
         elif args.get(2) and args.get(2).replace(prefix, "") in plist():
-            content += '删除：\n'
-            await message.edit(content)
             for plugin in plugins:
-                if args.get(2) == plugins[plugin]['name'] or args.get(2) == plugins[plugin]['cmd']:
+                if args.get(2).replace(prefix, "") == plugins[plugin]['name'] or args.get(2).replace(prefix, "") == plugins[plugin]['cmd']:
                     if plugins[plugin]['type'] == 'sys':
                         await message.edit(content + f"系统插件 {arg} 无法删除~")
                         return
-                    content += f"`{plugin}`...\n"
+                    content += f"删除插件 `{plugin}`...\n"
                     await message.edit(content)
                     await asyncio.sleep(2)
                     if plugins[plugin]['type'] in ['cmd', 'msg']:
                         client.remove_handler(plugins[plugin]['handler'], plugins[plugin]['group'])
                         os.remove(plugins[plugin]['file'])
-                        return
+                        break
                     elif plugins[plugin]['type'] == 'sched':
                         scheduler.remove_job(str(plugins[plugin]['group']))
                         os.remove(plugins[plugin]['file'])
-                        return
-            content = content.replace(f"`{plugin}`...\n", f"`{plugin}`...✓ \n")
+                        break
+            content = content.replace(f"删除插件 `{plugin}`...\n", f"已删除插件：`{plugin}`\n")
             await message.edit(content)
 
         else:
@@ -325,12 +323,12 @@ async def handler(client, message):
         if msgs:
             content += "\n**无命令插件**\n"
             for i in msgs:
-                content += f"`{prefix}{i}`：{msgs[i]}\n"
+                content += f"`{i}`：{msgs[i]}\n"
 
         if scheds:
             content += "\n**定时插件**\n"
             for i in scheds:
-                content += f"`{prefix}{i}`：{scheds[i]}\n"
+                content += f"`{i}`：{scheds[i]}\n"
 
         await message.edit(content)
 
