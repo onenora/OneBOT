@@ -6,7 +6,7 @@
 # 2023.03.12
 
 from pyrogram import idle
-from utils import load_plugin
+from utils import import_plugin
 from utils.config import client, logger, prefix
 
 def get_bot_greeting():
@@ -14,7 +14,7 @@ def get_bot_greeting():
     return f"Hi~ {me.first_name} {me.last_name}"
 
 def start_bot():
-    load_plugin()
+    import_plugin()
     client.start()
     logger.info(f"{get_bot_greeting()}, please send '{prefix}pm help pm' to any chat to get help.")
 
