@@ -1,14 +1,15 @@
-#FROM --platform=$TARGETPLATFORM alpine
-FROM alpine
+#FROM --platform=$TARGETPLATFORM python:alpine
+FROM python:alpine
+ENV TZ=Asia/Shanghai
+WORKDIR /onebot
 
-WORKDIR /TMBot
-RUN apk add --no-cache tzdata python3 python3-dev py3-pip gcc libc-dev linux-headers git && \
-    git clone https://github.com/noreph/TMBot /TMBot && \
-    pip3 install --root-user-action=ignore -r requirements.txt && \
-    rm -rf /var/cache/apk/*
+RUN  \
+    build_pkgs=" gcc libc-dev linux-headers" \
+    && apk --no-cache add ${build_pkgs} \
+    && apk add --no-cache tzdata gcc libc-dev linux-headers git \
+    && git clone https://github.com/onenora/OneBOT /onebot \
+    && pip3 install --root-user-action=ignore -r requirements.txt \
+    && apk del --no-network ${build_pkgs} \
+    && rm -rf /var/cache/apk/*
 
-ENV TZ=Asia/Shanghai \
-    API_ID=0000000 \
-    API_HASH=00000000000000000000000000000000
-
-CMD [ "sh", "-c", "/TMBot/__main__.py" ]
+CMD [ "sh", "-c", "__main__.py" ]

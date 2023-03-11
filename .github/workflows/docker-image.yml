@@ -29,4 +29,4 @@ jobs:
         with:
           platforms: linux/arm64,linux/amd64
           push: true
-          tags: noreph/tmbot:latest
+          tags: altriabot/onebot:latest

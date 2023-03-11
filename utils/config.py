@@ -30,7 +30,7 @@ check_dir(tmp_dir)
 conf = configparser.ConfigParser()
 
 if not path.exists(config):
-    conf['DEFAULT'] = {'name': 'TMBot',
+    conf['DEFAULT'] = {'name': 'onebot',
                         'prefix': '#',
                         'loglevel': 'INFO',
                         'pyrogram_log_level': 'WARNING',

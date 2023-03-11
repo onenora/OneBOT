@@ -12,41 +12,21 @@ from utils import import_plugin
 from utils.utils import Packages, PLUGINS, scheduler, oncmd
 from utils.config import client, version, prefix, base_dir, plugins_dir
 
-def get_args(mgs):
-    args = {}
-    for i, arg in enumerate(mgs.text.strip().split()):
-        args[i] = arg
-    return args
-
-def restart():
-    os.execv(sys.executable, [sys.executable] + sys.argv)
-
-def get_url(url):
-    with requests.Session() as s:
-        r = s.get(url)
-        if not r.ok:
-            return False
-        return r.text
-
 def get_plugins():
-    result = get_url('https://github.com/noreph/TMBot-Plugins/tree/4.0')
     dct = {}
+    plugins_dir = os.path.join(os.getcwd(), "plugins")
 
-    if not result:
-        return False
-
-    soup = BeautifulSoup(result, 'html.parser')
-    a_tags = soup.find_all('a')
-    urls = ['https://raw.githubusercontent.com' + re.sub('/blob', '', link.get('href')) 
-                        for link in a_tags if '.py' in link.get('href')]
-
-    for i in urls:
-        content = re.search('(?<=(\'\'\'|\"\"\")).+(?=(\'\'\'|\"\"\"))', get_url(i))
-        if content is not None:
-            dct[Path(i).stem] = {'url': i, 'help': content.group(0)}
+    for file in os.listdir(plugins_dir):
+        if file.endswith(".py"):
+            plugin_name = os.path.splitext(file)[0]
+            with open(os.path.join(plugins_dir, file), "r") as f:
+                content = f.read()
+            help_text = re.search('(?<=('''|""")).+(?=('''|"""))', content)
+            if help_text is not None:
+                dct[plugin_name] = {'url': os.path.join(plugins_dir, file), 'help': help_text.group(0)}
 
     return dct
-
+  
 async def install(url, plugin):
     content = get_url(url)
     packages = re.search('(?<=(Packages\((\'|\"))).+(?=(\'|\")\))', content)
@@ -67,31 +47,31 @@ async def install(url, plugin):
 @oncmd(cmd='pm')
 async def handler(client, message):
     '''
-1、查看已安装插件列表：
+1、查看已安装插件列表:
 `pm`
-2、查看插件、指令信息：
+2、查看插件、指令信息:
 `pm help <插件名>/<指令>`
-3、升级程序：
+3、升级程序:
 `pm update`
-4、升级已安装插件：
+4、升级已安装插件:
 `pm update plugin`
-5、获取可用插件列表：
+5、获取可用插件列表:
 `pm list`
-6、安装插件：
-    安装部分插件：
+6、安装插件:
+    安装部分插件:
     `pm add <插件 1> <插件 2> <插件 3>`
-    安装所有插件：
+    安装所有插件:
     `pm add all`
-7、删除插件：
-    删除已安装插件：
+7、删除插件:
+    删除已安装插件:
     `pm del <插件名>`
-    删除所有已安装插件：
+    删除所有已安装插件:
     `pm del all`
-8、重启：
+8、重启:
 `pm restart`
     '''
     args = get_args(message)
-    content = f'🤖 **TMBot v{version}**\n'
+    content = f'🤖 **onebot v{version}**\n'
     content += f'▍ `{message.text}`\n\n'
     plugins = PLUGINS.dct()
 
@@ -120,7 +100,7 @@ async def handler(client, message):
 
         content += '可用插件列表:\n'
         for i in list(dct.keys()):
-            content += f"`{i}`：{dct[i]['help']}\n"
+            content += f"`{i}`:{dct[i]['help']}\n"
         await message.edit(content)
 
     async def add(content):
@@ -141,7 +121,7 @@ async def handler(client, message):
             await message.edit(content + "插件列表获取失败~")
             return
 
-        content += f"安装：\n"
+        content += f"安装:\n"
         await message.edit(content)
         if args.get(2) == 'all':
             for i in dct:
@@ -181,7 +161,7 @@ async def handler(client, message):
             return
         plugins = PLUGINS.dct()
         if args.get(2) and args.get(2) == 'all':
-            content += '删除：\n'
+            content += '删除:\n'
             await message.edit(content)
             for plugin in plugins:
                 if plugins[plugin]['type'] != 'sys':
@@ -217,7 +197,7 @@ async def handler(client, message):
                         os.remove(plugins[plugin]['file'])
                         PLUGINS.delete(plugin)
                         break
-            content = content.replace(f"删除插件 `{plugin}`...\n", f"已删除插件：`{plugin}`\n")
+            content = content.replace(f"删除插件 `{plugin}`...\n", f"已删除插件:`{plugin}`\n")
             await message.edit(content)
 
         else:
@@ -236,7 +216,7 @@ async def handler(client, message):
             dct = get_plugins()
             lst = list(dct.keys())
             plugins = PLUGINS.dct()
-            content += '升级插件：\n'
+            content += '升级插件:\n'
             await message.edit(content)
             for plugin in plugins:
                 if plugins[plugin]['type'] != 'sys':
@@ -260,13 +240,13 @@ async def handler(client, message):
                 if result == 'Already up to date.':
                     content = content.replace('获取更新中...', '暂无更新~')
                 elif result.find("Fast-forward") > -1:
-                    content = content.replace('获取更新中...', f'''更新完成，即将重启：\n```{result}```''')
+                    content = content.replace('获取更新中...', f'''更新完成，即将重启:\n```{result}```''')
                     await message.edit(content)
                     restart()
                 else:
-                    content = content.replace('获取更新中...', f'''更新出错：\n```{result}```''')
+                    content = content.replace('获取更新中...', f'''更新出错:\n```{result}```''')
             except Exception as e:
-                content = content.replace('获取更新中...', f'''更新出错：```\n{e}```''')
+                content = content.replace('获取更新中...', f'''更新出错:```\n{e}```''')
             await message.edit(content)
 
     async def get_help(content):
@@ -287,13 +267,13 @@ async def handler(client, message):
                     plugin = plugins[i]['name']
                     break
 
-        content += f'**{args.get(2)}** 的信息：\n\n'
+        content += f'**{args.get(2)}** 的信息:\n\n'
 
         if plugins[plugin]['type'] in ['sys', 'cmd']:
-            content += f"命令：`{prefix}{plugins[plugin]['cmd']}`\n"
+            content += f"命令:`{prefix}{plugins[plugin]['cmd']}`\n"
 
-        content += f"版本：`{plugins[plugin]['ver']}`\n"
-        content += f"插件名：`{plugins[plugin]['name']}`\n\n"
+        content += f"版本:`{plugins[plugin]['ver']}`\n"
+        content += f"插件名:`{plugins[plugin]['name']}`\n\n"
 
         content += f"{plugins[plugin]['help']}\n"
 
@@ -315,22 +295,22 @@ async def handler(client, message):
                 scheds[plugins[plugin]['name']] = plugins[plugin]['help']
 
         for i in sys:
-            content += f"`{prefix}{i}`：{sys[i]}\n"
+            content += f"`{prefix}{i}`:{sys[i]}\n"
 
         if cmds:
             content += "\n**命令列表**\n"
             for i in cmds:
-                content += f"`{prefix}{i}`：{cmds[i]}\n"
+                content += f"`{prefix}{i}`:{cmds[i]}\n"
 
         if msgs:
             content += "\n**无命令插件**\n"
             for i in msgs:
-                content += f"`{i}`：{msgs[i]}\n"
+                content += f"`{i}`:{msgs[i]}\n"
 
         if scheds:
             content += "\n**定时插件**\n"
             for i in scheds:
-                content += f"`{i}`：{scheds[i]}\n"
+                content += f"`{i}`:{scheds[i]}\n"
 
         await message.edit(content)
 
