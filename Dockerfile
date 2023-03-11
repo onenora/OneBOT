@@ -1,17 +1,16 @@
+#FROM --platform=$TARGETPLATFORM python:alpine
 FROM python:alpine
+ENV TZ=Asia/Shanghai
 WORKDIR /onebot
-# The libc6-compat dependency is required to use the host's docker commands
+
 RUN  \
-    build_pkgs="gcc libc-dev linux-headers python3-dev" \
-    && apk --no-cache add ${build_pkgs} \
+    build_pkgs="gcc libc-dev linux-headers" \
+    && apk --no-cache add git ${build_pkgs} \
+    && apk add --no-cache tzdata gcc libc-dev linux-headers git \
     && git clone https://github.com/onenora/OneBOT /onebot \
-    && pip install --upgrade pip
-    && pip install --root-user-action=ignore -r requirements.txt --no-cache-dir \
-    && mkdir -p /onebot/data \
-    && apk del --no-network ${ build_pkgs} \
-    && rm -rf .git .github .gitignore Dockerfile install.sh LICENSE README.md requirements.txt \
+    && pip install --upgrade pip \
+    && pip3 install --root-user-action=ignore -r requirements.txt \
+    && apk del --no-network ${build_pkgs} \
     && rm -rf /var/cache/apk/*
 
-VOLUME /onebot/data
-
-ENTRYPOINT ["python3", "-u", "main.py"]
+CMD [ "sh", "-c", "/onebot/__main__.py" ]
