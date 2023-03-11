@@ -6,7 +6,6 @@ WORKDIR /onebot
 RUN  \
     build_pkgs="gcc libc-dev linux-headers" \
     && apk --no-cache add git ${build_pkgs} \
-    && apk add --no-cache tzdata gcc libc-dev linux-headers git \
     && git clone https://github.com/onenora/OneBOT /onebot \
     && pip install --upgrade pip \
     && pip3 install --root-user-action=ignore -r requirements.txt \
