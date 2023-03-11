@@ -1,49 +1,60 @@
-'''ping'''
-from utils.utils import oncmd, Packages
+from loguru import logger
+from core import command
+from pyrogram import Client
+from pyrogram.types import Message
+from tools.helpers import Parameters, show_cmd_tip, show_exception
+from tools.poster import check_ip, check_ip_port, process_check_data
+from tools.sessions import session
 
-from datetime import datetime
-from pyrogram.raw.functions import Ping
 
-if Packages('ping3'):
-    from ping3 import ping
+@Client.on_message(command('ip'))
+async def ip(_: Client, msg: Message):
+    """查询ip信息"""
+    cmd, address = Parameters.get(msg)
+    if not address:
+        return await show_cmd_tip(msg, cmd)
+    elif address == "me":
+        address = ''
 
-@oncmd(cmd='ping', ver='0.1')
-async def handler(client, message):
-    '''
-    1、`ping`
-    2、`ping dc`
-    '''
-    args = message.text.strip().split()
-    arg = args[1] if len(args) > 1 else None
-    if arg == 'dc':
-        await message.edit("Pong...")
-        DCs = ["149.154.175.53", "149.154.167.51", "149.154.175.100", "149.154.167.91", "91.108.56.130"]
-        data = []
-        for dc in DCs:
-            result = ping(dc, unit = "ms")
-            if result is not None:
-                result = round(result, 2)
-            data.append(result)
+    async def get_api(api: str) -> str:
+        async with session.get(api) as resp:
+            if resp.status == 200:
+                data = await resp.json()
+                tmp = '\n'.join(f"{k}：`{v}`" for k, v in data.items())
+                return tmp if tmp else "😂 No Response ~"
+            resp.raise_for_status()
 
-        if not any(data):
-            await message.edit("ping 失败~")
-            return
-
-        await message.edit(
-            f"🇺🇸 `DC1`: `{data[0]}ms`\n"
-            f"🇳🇱 `DC2`: `{data[1]}ms`\n"
-            f"🇺🇸 `DC3`: `{data[2]}ms`\n"
-            f"🇳🇱 `DC4`: `{data[3]}ms`\n"
-            f"🇸🇬 `DC5`: `{data[4]}ms`\n")    
-
+    try:
+        api = f"http://ip-api.com/json/{address}"
+        text = await get_api(api)
+    except Exception as e:
+        return await show_exception(msg, e)
     else:
-        #https://github.com/TeamPGM/PagerMaid-Pyro/blob/aff6d953a1e00dc2241db9da32abc8f4c45453d3/pagermaid/modules/status.py#L126
-        start = datetime.now()
-        await client.invoke(Ping(ping_id=0))
-        end = datetime.now()
-        ping_duration = (end - start).microseconds / 1000
-        start = datetime.now()
-        await message.edit("Pong!")
-        end = datetime.now()
-        msg_duration = (end - start).microseconds / 1000
-        await message.edit(f"Pong!| PING: {ping_duration}ms | MSG: {msg_duration}ms")
+        await msg.edit_text(text)
+
+
+@Client.on_message(command("ipcheck"))
+async def ip_checker(_: Client, msg: Message):
+    """检测IP或者域名是否被阻断"""
+    cmd, args = Parameters.get_more(msg)
+    if len(args) == 1:
+        try:
+            resp = await check_ip(args[0])
+        except Exception as e:
+            logger.error(e)
+            return await show_exception(msg, e)
+    elif len(args) == 2:
+        try:
+            resp = await check_ip_port(args[0], args[1])
+        except Exception as e:
+            logger.error(e)
+            return await show_exception(msg, e)
+    else:
+        return await show_cmd_tip(msg, cmd)
+
+    try:
+        res = await process_check_data(len(args), resp=resp)
+        await msg.edit_text(f"🔎 Query  `{' '.join(args)}`\n{res}")
+    except Exception as e:
+        logger.error(e)
+        await show_exception(msg, e)
