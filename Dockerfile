@@ -12,4 +12,4 @@ RUN  \
     && apk del --no-network ${build_pkgs} \
     && rm -rf /var/cache/apk/*
 
-CMD [ "sh", "-c", "__main__.py" ]
+CMD [ "sh", "-c", "/onebot/__main__.py" ]

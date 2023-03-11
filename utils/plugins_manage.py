@@ -21,14 +21,14 @@ def get_plugins():
             plugin_name = os.path.splitext(file)[0]
             with open(os.path.join(plugins_dir, file), "r") as f:
                 content = f.read()
-            help_text = re.search('(?<=('''|""")).+(?=('''|"""))', content)
+            help_text = re.search('(?<=(Packages\((\'|\"))).+(?=(\'|\")\))', content)
             if help_text is not None:
                 dct[plugin_name] = {'url': os.path.join(plugins_dir, file), 'help': help_text.group(0)}
 
     return dct
   
 async def install(url, plugin):
-    content = get_url(url)
+    content = f.read()
     packages = re.search('(?<=(Packages\((\'|\"))).+(?=(\'|\")\))', content)
     if packages:
         if not Packages(packages.group()):
