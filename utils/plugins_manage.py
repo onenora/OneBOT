@@ -90,7 +90,7 @@ async def handler(client, message):
 `pm restart`
     '''
     args = get_args(message)
-    content = f'🤖 **TMBot v{version}**\n'
+    content = f'🤖 **OneBot v{version}**\n'
     content += f'▍ `{message.text}`\n\n'
     plugins = PLUGINS.dct()
 

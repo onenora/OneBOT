@@ -7,7 +7,7 @@ from os import path, mkdir, getenv
 
 from pyrogram import Client
 
-version = "4.1"
+version = "4.2"
 # 创建文件夹的函数，如果不存在则创建
 def check_dir(directory):
     if not path.exists(directory):
