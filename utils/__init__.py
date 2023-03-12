@@ -18,7 +18,7 @@ def load_plugin():
 
     PLUGINS.init()
 
-    import_plugin('utils.plugins_manage')
+    import_plugin('utils.pm')
 
     root = 'data/plugins'
 

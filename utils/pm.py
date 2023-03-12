@@ -95,6 +95,13 @@ async def handler(client, message):
     content += f'▍ `{message.text}`\n\n'
     plugins = PLUGINS.dct()
 
+    async def del_msg(msg, t: int = 30):
+        await asyncio.sleep(t)
+        try:
+            await msg.delete()
+        except Exception:
+            pass
+
     def plist():
         lst = []
         plugins = PLUGINS.dct()
@@ -106,7 +113,6 @@ async def handler(client, message):
         return lst
 
     async def restartd():
-        await message.delete()
         restart()
 
     async def get_list(content):
@@ -122,6 +128,7 @@ async def handler(client, message):
         for i in list(dct.keys()):
             content += f"`{i}`：{dct[i]['help']}\n"
         await message.edit(content)
+        await del_msg(message)
 
     async def add(content):
         for i in list(args.keys())[:2]:
@@ -174,6 +181,8 @@ async def handler(client, message):
                 await asyncio.sleep(1)
             await message.edit(content + f'\n发送 `{prefix}pm` 获取帮助~')
 
+        await del_msg(message)
+
     async def delete(content):
         if not args.get(2):
             content += '缺少参数~'
@@ -181,22 +190,11 @@ async def handler(client, message):
             return
         plugins = PLUGINS.dct()
         if args.get(2) and args.get(2) == 'all':
-            content += '删除：\n'
-            await message.edit(content)
-            for plugin in plugins:
+            await message.edit(content + '即将删除所有插件~\n')
+            for plugin in list(plugins):
                 if plugins[plugin]['type'] != 'sys':
-                    content += f"`{plugin}`...\n"
-                    await message.edit(content)
-                    await asyncio.sleep(2)
-                    if plugins[plugin]['type'] in ['cmd', 'msg']:
-                        client.remove_handler(plugins[plugin]['handler'], plugins[plugin]['group'])
-                        os.remove(plugins[plugin]['file'])
-                    elif plugins[plugin]['type'] == 'sched':
-                        scheduler.remove_job(str(plugins[plugin]['group']))
-                        os.remove(plugins[plugin]['file'])
-                    content = content.replace(f"`{plugin}`...\n", f"`{plugin}`...✓ \n")
-                    await message.edit(content)
-                await asyncio.sleep(1)
+                    PLUGINS.delete(plugin)
+            await message.edit(content + '已删除所有插件~\n')
 
         elif args.get(2) and args.get(2).replace(prefix, "") in plist():
             for plugin in plugins:
@@ -208,13 +206,9 @@ async def handler(client, message):
                     await message.edit(content)
                     await asyncio.sleep(2)
                     if plugins[plugin]['type'] in ['cmd', 'msg']:
-                        client.remove_handler(plugins[plugin]['handler'], plugins[plugin]['group'])
-                        os.remove(plugins[plugin]['file'])
                         PLUGINS.delete(plugin)
                         break
                     elif plugins[plugin]['type'] == 'sched':
-                        scheduler.remove_job(str(plugins[plugin]['group']))
-                        os.remove(plugins[plugin]['file'])
                         PLUGINS.delete(plugin)
                         break
             content = content.replace(f"删除插件 `{plugin}`...\n", f"已删除插件：`{plugin}`\n")
@@ -223,6 +217,8 @@ async def handler(client, message):
         else:
             content += f'`{args.get(2)}` 不存在~' 
             await message.edit(content)
+
+        await del_msg(message)
 
 
     async def update(content):
@@ -251,9 +247,12 @@ async def handler(client, message):
                             content = content.replace(f"`{plugin}`...\n", f"`{plugin}`...✗ \n")
                             await message.edit(content)
             await message.edit(content + f'\n发送 `{prefix}pm` 获取帮助~')
+            await del_msg(message)
 
         else:
             content += '获取更新中...'
+            await message.edit(content)
+            await asyncio.sleep(2)
             try:
                 update = git.cmd.Git(base_dir)
                 result = update.pull()
@@ -262,12 +261,14 @@ async def handler(client, message):
                 elif result.find("Fast-forward") > -1:
                     content = content.replace('获取更新中...', f'''更新完成，即将重启：\n```{result}```''')
                     await message.edit(content)
+                    await del_msg(message, 3)
                     restart()
                 else:
                     content = content.replace('获取更新中...', f'''更新出错：\n```{result}```''')
             except Exception as e:
                 content = content.replace('获取更新中...', f'''更新出错：```\n{e}```''')
             await message.edit(content)
+            await del_msg(message)
 
     async def get_help(content):
         if not args.get(2):
@@ -301,6 +302,7 @@ async def handler(client, message):
             content += f"{plugins[plugin]['doc']}\n"
 
         await message.edit(content)
+        await del_msg(message)
 
     async def pm(content):
         sys, cmds, msgs, scheds = {}, {}, {}, {}
@@ -333,6 +335,7 @@ async def handler(client, message):
                 content += f"`{i}`：{scheds[i]}\n"
 
         await message.edit(content)
+        await del_msg(message)
 
         
     match args.get(1):
