@@ -20,7 +20,7 @@ def load_plugin():
     # 初始化插件
     PLUGINS.init()
     # 导入插件管理模块
-    import_plugin('utils.plugins_manage')
+    import_plugin('utils.pm')
     # 遍历插件目录下的所有python文件，以数据排序
     root = Path('data/plugins')
     for path in sorted(root.glob("*.py")):

@@ -18,14 +18,14 @@ class PLUGINS:
         group = 0
         plugins = {}
 
-    def reg(func, types, cmd, ver):
+    def add(func, types, cmd, ver):
         global plugins, group
         group += 1
 
         file = inspect.getfile(func)
         name = inspect.getmodulename(file)
 
-        if name == 'plugins_manage':
+        if name == 'pm':
             types = 'sys'
             ver = version
 
@@ -39,7 +39,7 @@ class PLUGINS:
         elif types in ['sched']:
             group -= -1000
             handler = scheduler.add_job(func, CronTrigger.from_crontab(cmd, 'UTC'), kwargs={'client': client}, id=str(group))
-        logger.info(f'loaded: {name}')
+        logger.info(f'add: {name}')
 
         plugins[name] = {
             'handler': handler,
@@ -52,28 +52,35 @@ class PLUGINS:
             'doc': func.__doc__,
             'ver': ver
         }
+
     def delete(plugin):
         global plugins
+        if plugins[plugin]['type'] in ['cmd', 'msg']:
+            client.remove_handler(plugins[plugin]['handler'], plugins[plugin]['group'])
+        else:
+            scheduler.remove_job(str(plugins[plugin]['group']))
+        os.remove(plugins[plugin]['file'])
         del plugins[plugin]
+        logger.info(f'del: {plugin}')
 
     def dct():
         return plugins
 
 def oncmd(cmd, ver: str = '0.0') -> Callable:
     def decorator(func: Callable) -> Callable:
-        PLUGINS.reg(func, 'cmd', cmd, ver)
+        PLUGINS.add(func, 'cmd', cmd, ver)
         return func
     return decorator
 
 def onmsg(Filter, ver: str = '0.0') -> Callable:
     def decorator(func: Callable) -> Callable:
-        PLUGINS.reg(func, 'msg', Filter, ver)
+        PLUGINS.add(func, 'msg', Filter, ver)
         return func
     return decorator
 
 def onsched(cron, ver: str = '0.0') -> Callable:
     def decorator(func: Callable) -> Callable:
-        PLUGINS.reg(func, 'sched', cron, ver)
+        PLUGINS.add(func, 'sched', cron, ver)
         return func
     return decorator
 
