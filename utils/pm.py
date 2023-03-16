@@ -29,7 +29,7 @@ def get_url(url):
         return r.text
 
 def get_plugins():
-    result = get_url('https://github.com/noreph/TMBot-Plugins/tree/4.0')
+    result = get_url('https://github.com/noreph/TMBot-Plugins')
     dct = {}
 
     if not result:

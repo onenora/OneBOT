@@ -7,11 +7,11 @@
 - `curl -fsSL https://get.docker.com | bash -s docker`
 ## 启动onebot
 ```
-docker run -it --restart=always --name=onebot \
+docker run -it --restart=always --name=tmbot \
 -e API_ID=your api_id \
 -e API_HASH=your api_hash \
--v ${HOME}/bot/onebot:/onebot/data \
-altriabot/onebot
+-v {$HOME}/bot/tmbot:/TMBot/data \
+altriabot/tmbot
 ```
 ## 指令说明
 
