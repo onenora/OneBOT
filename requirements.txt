@@ -1,8 +1,7 @@
 APScheduler==3.10.1
 beautifulsoup4==4.11.2
-convopyro==0.5
 GitPython==3.1.31
 Pyrogram==2.0.100
+TgCrypto==1.2.5
 requests==2.28.2
-setuptools==65.6.0
 uvloop==0.17.0

@@ -9,8 +9,10 @@
 # 导入自定义配置变量“client”，“logger”和“prefix”
 from pyrogram import idle
 from utils import load_plugin
+from utils.utils import Packages
 from utils.config import client, logger, prefix
 
+Packages('TgCrypto')
 # 定义一个名为“main”的函数
 def main():
     # 调用自定义函数“load_plugin”，加载插件/命令

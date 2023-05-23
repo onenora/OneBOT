@@ -6,8 +6,8 @@ import configparser
 from os import path, mkdir, getenv
 
 from pyrogram import Client
-
-version = "4.2.1"
+from utils.convopyro import Conversation
+version = "4.5.4"
 # 创建文件夹的函数，如果不存在则创建
 def check_dir(directory):
     if not path.exists(directory):
@@ -29,8 +29,17 @@ check_dir(tmp_dir)
 # 创建配置文件对象
 conf = configparser.ConfigParser()
 # 如果配置文件不存在，创建默认配置文件
+if path.exists(config):
+    with open(config, 'r', encoding='utf-8') as f:
+            text = f.read()
+
+    text = text.replace("[DEFAULT]", "[TMBot]")
+    with open(config, 'w', encoding='UTF-8') as f:
+        f.write(text)
+
 if not path.exists(config):
-    conf['DEFAULT'] = {'name': 'onebot',
+    conf['TMBot'] = {'desc': 'TMBot 的配置',
+                        'name': 'TMBot',
                         'prefix': '#',
                         'loglevel': 'INFO',
                         'pyrogram_log_level': 'WARNING',
@@ -41,11 +50,11 @@ if not path.exists(config):
  # 读取配置文件
 conf.read(config)
 
-SESSN = conf['DEFAULT']['name']
-prefix = conf['DEFAULT']['prefix']
-log_level = conf['DEFAULT']['loglevel']
-pyrogram_log_level = conf['DEFAULT']['pyrogram_log_level']
-apscheduler_log_level = conf['DEFAULT']['apscheduler_log_level']
+SESSN = conf['TMBot']['name']
+prefix = conf['TMBot']['prefix']
+log_level = conf['TMBot']['loglevel']
+pyrogram_log_level = conf['TMBot']['pyrogram_log_level']
+apscheduler_log_level = conf['TMBot']['apscheduler_log_level']
 
 uvloop.install()
 
@@ -55,6 +64,8 @@ client = Client(
     api_hash=api_hash,
     workdir=session_dir
 )
+
+Conversation(client)
 
 def loglevel(level):
     if level == 'WARNING':

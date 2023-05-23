@@ -85,8 +85,8 @@ def onsched(cron, ver: str = '0.0') -> Callable:
     return decorator
 
 def Packages(p):
-    required = set(p.split())
-    installed = {pkg.key for pkg in pkg_resources.working_set}
+    required = set(p.lower().split())
+    installed = {str(pkg.key).lower() for pkg in pkg_resources.working_set}
     missing = required - installed
     if not missing:
         return True
